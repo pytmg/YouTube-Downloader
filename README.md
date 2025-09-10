@@ -12,7 +12,7 @@ It's basically a hobby project I'm working on as a tool for myself, and others, 
 
 You need Python installed, if you don't have it installed, that's not my problem, find out how to do it for your OS ig ¯\\\_(ツ)\_/¯
 
-1. `git clone https://github.com/pytmg/youtube-downloader` or [Download ZIP](...)
+1. `git clone https://github.com/pytmg/youtube-downloader` or [Download ZIP](https://github.com/pytmg/YouTube-Downloader/archive/refs/heads/master.zip)
 
 2. If you downloaded the ZIP file, unzip it
 3. Navigate to the folder
