@@ -4,11 +4,8 @@
 input="$1"
 
 # check if input is truthy
-case "$input" in
-    True|true|1|yes)
-        python3 -m pip install yt-dlp --break-system-packages
-        ;;
-    *)
-        python3 -m pip install yt-dlp
-        ;;
-esac
+if [ "$1" = "true" ] || [ "$1" = "1" ] || [ "$1" = "yes" ]; then
+    python3 -m pip install yt-dlp requests --break-system-packages
+else
+    python3 -m pip install yt-dlp requests
+fi
