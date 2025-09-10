@@ -1,0 +1,44 @@
+# YouTube Downloader V1
+
+**oh god this again**
+
+EXCEPT ITS NOT A MESS!!!
+
+## What is YouTube Downloader?
+
+It's basically a hobby project I'm working on as a tool for myself, and others, so they don't have to search around through really odd websites just to download some music from YouTube.
+
+## How do I use it?
+
+You need Python installed, if you don't have it installed, that's not my problem, find out how to do it for your OS ig ¯\\\_(ツ)\_/¯
+
+1. `git clone https://github.com/pytmg/youtube-downloader` or [Download ZIP](...)
+
+2. If you downloaded the ZIP file, unzip it
+3. Navigate to the folder
+4. Run the `require.bat`/`.sh` file. To install necessary dependencies.
+5. Run `python .` to start YouTube Downloader Interactive.
+   
+OR...
+
+5. Run `python . video [URL]` to use the CLI mode, to download your video without navigating a menu.
+
+If you want more information on the CLI mode, use the `--help` flag.
+
+## Interactive Mode
+
+All this is is just a really basic menu, literally designed to be as simple as possible. *for my sake.*
+
+To switch modes, you can use your left/right arrow keys to navigate between VIDEO, AUDIO and BOTH.
+
+To input a URL, you can press `U` on your keyboard to open up a prompt, where you can paste in your URL(s) (separated by space)
+
+And then, once you've got all that done, just press ENTER, and wait... and wait... and, oh hey a bird- oh hey the video's done downloading.
+
+## What's this JSON file?
+
+Oh, the DownloadSettings.json file? Not much, just.. a boolean, if you want the downloads to be high quality or not. It's not a NECESSITY, it gets generated automatically if you don't have it already anyways.
+
+## Where does it download?
+
+Depending on your DownloadSettings.json file, it defaults to your Downloads folder. You can change it to anything else, including `.` which just means "wherever the downloader's being run FROM, download things there"
