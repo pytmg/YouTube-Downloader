@@ -1,7 +1,9 @@
 # YouTube Downloader V1
 
+# christ this code is no better than V0.22 on GDTMG232 lmfaoo
+
 try:
-    import os, yt_dlp as ytdl, json, sys, curses, requests
+    import os, yt_dlp as ytdl, json, sys, curses, requests, re
     from typing import Literal
 except ModuleNotFoundError:
     import os, sys
@@ -111,33 +113,36 @@ try:
 except IndexError:
     InteractiveMode = True
 
-def download(url: str, type: Literal["video", "audio", "both"], output_path: str = ".") -> None: # url can be split by spaces :)
+def download(url: str, type: Literal["video", "audio", "both"], output_path: str = ".", progress_callback=None) -> None:
     PSTP = []
     if type.lower().strip() == "video":
         FRMT = "bestvideo+bestaudio/best" if Settings["hq"] else "bestvideo[height<=720]+bestaudio/best"
     elif type.lower().strip() == "audio":
         FRMT = "bestaudio/best" if Settings["hq"] else "bestaudio[abr<=128]"
-        PSTP = [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "mp3",
-            "preferredquality": "192"
-        }]
+        PSTP = [{"key": "FFmpegExtractAudio","preferredcodec": "mp3","preferredquality": "192"}]
     elif type.lower().strip() == "both":
-        download(url, "video", output_path)
-        download(url, "audio", output_path)
+        download(url, "video", output_path, progress_callback)
+        download(url, "audio", output_path, progress_callback)
         return
+
+    def hook(d):
+        if d['status'] == 'downloading' and progress_callback:
+            pct = d.get('_percent_str', '').strip()
+            # strip ANSI if present
+            pct = re.sub(r'\x1b\[.*?m', '', pct)
+            progress_callback(pct)
+
     OPTS = {
         "format": FRMT,
         "postprocessors": PSTP,
-        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s')
+        "outtmpl": os.path.join(output_path, '%(title)s.%(ext)s'),
+        "progress_hooks": [hook]
     }
 
     if type.lower().strip() == "video":
         OPTS["merge_output_format"] = "mp4"
 
-    DL = ytdl.YoutubeDL(OPTS)
-
-    DL.download(url.split())
+    ytdl.YoutubeDL(OPTS).download(url.split())
 
 def INTERACTIVE():
     def addstr(stdscr: curses.window, y: int, text: str, *, italic: bool = False) -> None:
@@ -147,9 +152,15 @@ def INTERACTIVE():
     def CURSESMENU(stdscr: curses.window) -> None:
         url = ""
         opt = 0
-        opts = [
-            "video", "audio", "both"
-        ]
+        opts = ["video", "audio", "both"]
+        pct_str = ""
+
+        def update_pct(pct):
+            nonlocal pct_str
+            pct_str = pct
+            addstr(stdscr, 1, f"Progress: {pct_str}")
+            stdscr.refresh()
+
         while True:
             try:
                 h, w = stdscr.getmaxyx()
@@ -157,14 +168,14 @@ def INTERACTIVE():
 
                 addstr(stdscr, 1, "YouTube Downloader V1")
                 addstr(stdscr, 2, "by pytmg", italic=True)
-
                 addstr(stdscr, 4, f"Mode: {' '.join([_opt.upper() if idx == opt else _opt.lower() for idx, _opt in enumerate(opts)])} [←→]")
                 addstr(stdscr, 5, f"URL(s): {url} [u]")
-                
+
                 addstr(stdscr, h-3, "Press [ENTER] to begin downloading.")
                 addstr(stdscr, h-2, "Press [q] to quit YouTube Downloader")
 
                 stdscr.box()
+                stdscr.refresh()
 
                 k = stdscr.getch()
                 if k == ord("q"): break
@@ -175,25 +186,25 @@ def INTERACTIVE():
                     OUTPUTb = stdscr.getstr(1, 0)
                     url = OUTPUTb.decode("utf-8")
                 if k == curses.KEY_LEFT:
-                    opt -= 1
-                    opt %= len(opts)
-                    continue
+                    opt = (opt - 1) % len(opts)
                 if k == curses.KEY_RIGHT:
-                    opt += 1
-                    opt %= len(opts)
-                    continue
+                    opt = (opt + 1) % len(opts)
                 if k in [10, curses.KEY_ENTER]:
                     stdscr.clear()
-                    stdscr.addstr(0, 0, "Downloading, please wait...", curses.A_DIM)
+                    addstr(stdscr, 0, "Downloading, please wait...", italic=False)
+                    yeolde = sys.stdout # ye' olde standard output
+                    sys.stdout = open(os.devnull, "w") # we dont need yt-dlp output, so just uhhhh throw it out :P
                     stdscr.refresh()
-                    download(url, opts[opt], OutDir)
+                    download(url, opts[opt], OutDir, progress_callback=update_pct)
                     stdscr.clear()
-                    stdscr.addstr(0, 0, "Downloads done. Press any key to exit.")
+                    sys.stdout.close()
+                    sys.stdout = yeolde # restore stdout because we're nice people
+                    addstr(stdscr, 0, "Downloads done. Press any key to exit.")
                     stdscr.getch()
                     break
             except curses.error:
                 stdscr.clear()
-                stdscr.addstr(0, 0, "Too Small!")
+                addstr(stdscr, 0, "Too Small!")
                 stdscr.getch()
 
     curses.wrapper(CURSESMENU)
